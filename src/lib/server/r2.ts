@@ -1,5 +1,4 @@
 import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '$env/dynamic/private';
 
 function getR2Client() {
@@ -14,17 +13,18 @@ function getR2Client() {
 	});
 }
 
-export async function getPresignedUploadUrl(eventId: string, photoId: string): Promise<string> {
+export async function uploadPhoto(eventId: string, photoId: string, body: ArrayBuffer): Promise<void> {
 	const client = getR2Client();
 	const key = `events/${eventId}/${photoId}.jpg`;
 
 	const command = new PutObjectCommand({
 		Bucket: env.R2_BUCKET_NAME,
 		Key: key,
+		Body: new Uint8Array(body),
 		ContentType: 'image/jpeg'
 	});
 
-	return getSignedUrl(client, command, { expiresIn: 600 });
+	await client.send(command);
 }
 
 export async function listEventPhotos(eventId: string): Promise<string[]> {

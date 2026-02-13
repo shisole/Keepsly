@@ -44,20 +44,12 @@
 
 				uploadStatus = `Uploading photo ${uploadCurrent + 1}...`;
 				const res = await fetch(`/api/photos/${data.eventId}`, {
-					method: 'POST'
-				});
-
-				if (!res.ok) throw new Error('Failed to get upload URL');
-
-				const { uploadUrl } = await res.json();
-
-				const putRes = await fetch(uploadUrl, {
-					method: 'PUT',
+					method: 'POST',
 					body: compressed,
 					headers: { 'Content-Type': 'image/jpeg' }
 				});
 
-				if (!putRes.ok) throw new Error('Failed to upload photo');
+				if (!res.ok) throw new Error('Failed to upload photo');
 
 				uploadCurrent++;
 				uploadedCount++;
