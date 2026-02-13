@@ -5,6 +5,7 @@
 
 	let { data } = $props();
 
+	let displayName = $derived(data.eventName ?? `Event ${data.eventId}`);
 	let uploadUrl = $derived(`${$page.url.origin}/upload/${data.eventId}`);
 	let galleryUrl = $derived(`${$page.url.origin}/gallery?event=${data.eventId}`);
 
@@ -42,7 +43,7 @@
 	async function shareUploadLink() {
 		if (navigator.share) {
 			await navigator.share({
-				title: 'Upload photos to my event!',
+				title: `Upload photos to ${displayName}!`,
 				url: uploadUrl
 			});
 		} else {
@@ -53,7 +54,7 @@
 	async function shareGalleryLink() {
 		if (navigator.share) {
 			await navigator.share({
-				title: 'View event photos',
+				title: `${displayName} - Photo Gallery`,
 				url: galleryUrl
 			});
 		} else {
@@ -69,14 +70,20 @@
 </script>
 
 <svelte:head>
-	<title>Event {data.eventId} - Photoshoot</title>
-	<meta name="description" content="Share photos for this event. Scan the QR code or use the link to upload." />
-	<meta property="og:title" content="Photoshoot Event" />
-	<meta property="og:description" content="Share photos for this event. Scan the QR code or use the link to upload." />
+	<title>{displayName} - Photoshoot</title>
+	<meta name="description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
+	<meta property="og:title" content="{displayName} - Photoshoot" />
+	<meta property="og:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
 	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Photoshoot Event" />
-	<meta name="twitter:description" content="Share photos for this event. Scan the QR code or use the link to upload." />
+	{#if data.firstPhoto}
+		<meta property="og:image" content={data.firstPhoto} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content={data.firstPhoto} />
+	{:else}
+		<meta name="twitter:card" content="summary" />
+	{/if}
+	<meta name="twitter:title" content="{displayName} - Photoshoot" />
+	<meta name="twitter:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
@@ -89,7 +96,7 @@
 	</a>
 
 	<div class="mb-8 text-center">
-		<h1 class="mb-2 text-3xl font-bold text-gray-900">Your Event</h1>
+		<h1 class="mb-2 text-3xl font-bold text-gray-900">{displayName}</h1>
 		<p class="text-gray-500">Share the QR code or link with your guests</p>
 	</div>
 

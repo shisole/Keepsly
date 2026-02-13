@@ -11,9 +11,11 @@
 
 	let eventIdInput = $state('');
 	let eventId = $state($page.url.searchParams.get('event') ?? '');
+	let eventName = $state<string | null>(null);
 	let photos = $state<string[]>([]);
 	let loading = $state(false);
 	let initialLoad = $state(true);
+	let notFound = $state(false);
 	let errorMessage = $state('');
 
 	// Upload state
@@ -33,6 +35,7 @@
 	let copiedId = $state(false);
 	let copiedLink = $state(false);
 
+	let displayName = $derived(eventName ?? (eventId ? `Event ${eventId}` : 'Gallery'));
 	let uploadLink = $derived(eventId ? `${$page.url.origin}/upload/${eventId}` : '');
 	let galleryLink = $derived(eventId ? `${$page.url.origin}/gallery?event=${eventId}` : '');
 
@@ -50,7 +53,7 @@
 	async function shareLink() {
 		if (navigator.share) {
 			await navigator.share({
-				title: 'Upload photos to my event!',
+				title: `Upload photos to ${displayName}!`,
 				url: uploadLink
 			});
 		} else {
@@ -61,17 +64,20 @@
 	async function fetchPhotos(id: string) {
 		if (initialLoad) loading = true;
 		errorMessage = '';
+		notFound = false;
 		try {
 			const res = await fetch(`/api/photos/${id}`);
 			if (!res.ok) throw new Error('Event not found');
 			const data = await res.json();
 			photos = data.photos;
-			if (photos.length === 0 && initialLoad) {
-				errorMessage = 'No photos found for this event.';
+			eventName = data.eventName ?? null;
+			if (!eventName && photos.length === 0) {
+				notFound = true;
 			}
 		} catch {
 			photos = [];
-			errorMessage = 'Could not load photos. Check the event ID and try again.';
+			eventName = null;
+			notFound = true;
 		} finally {
 			loading = false;
 			initialLoad = false;
@@ -83,6 +89,8 @@
 		const trimmed = eventIdInput.trim();
 		if (trimmed.length < 5) return;
 		eventId = trimmed;
+		eventName = null;
+		notFound = false;
 		initialLoad = true;
 		const url = new URL($page.url);
 		url.searchParams.set('event', trimmed);
@@ -150,14 +158,14 @@
 </script>
 
 <svelte:head>
-	<title>Gallery - Photoshoot</title>
-	<meta name="description" content="View photos from a Photoshoot event." />
-	<meta property="og:title" content="Photo Gallery - Photoshoot" />
-	<meta property="og:description" content="View photos from a Photoshoot event." />
+	<title>{eventId ? `${displayName} - Gallery` : 'Gallery'} - Photoshoot</title>
+	<meta name="description" content="View photos from {eventId ? displayName : 'a Photoshoot event'}." />
+	<meta property="og:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Photoshoot" />
+	<meta property="og:description" content="View photos from {eventId ? displayName : 'a Photoshoot event'}." />
 	<meta property="og:type" content="website" />
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Photo Gallery - Photoshoot" />
-	<meta name="twitter:description" content="View photos from a Photoshoot event." />
+	<meta name="twitter:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Photoshoot" />
+	<meta name="twitter:description" content="View photos from {eventId ? displayName : 'a Photoshoot event'}." />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
@@ -170,8 +178,8 @@
 	</a>
 
 	<div class="mb-8 text-center">
-		<h1 class="mb-2 text-3xl font-bold text-gray-900">Gallery</h1>
-		<p class="text-gray-500">Enter your event ID to view and upload photos</p>
+		<h1 class="mb-2 text-3xl font-bold text-gray-900">{eventId ? displayName : 'Gallery'}</h1>
+		<p class="text-gray-500">{eventId ? 'View and upload photos' : 'Enter your event ID to view and upload photos'}</p>
 	</div>
 
 	<form onsubmit={handleSubmit} class="mx-auto mb-8 flex max-w-md gap-2">
@@ -200,11 +208,20 @@
 		</div>
 	{/if}
 
-	{#if errorMessage && !loading}
-		<p class="mb-6 text-center text-gray-400">{errorMessage}</p>
+	{#if notFound && !loading}
+		<div class="mx-auto max-w-sm rounded-2xl bg-gray-50 p-8 text-center">
+			<p class="mb-2 text-lg font-semibold text-gray-700">No event found</p>
+			<p class="mb-5 text-sm text-gray-500">We couldn't find an event with that ID. Want to start a new one?</p>
+			<a
+				href="/"
+				class="inline-block rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
+			>
+				Create an Event
+			</a>
+		</div>
 	{/if}
 
-	{#if eventId && !loading}
+	{#if eventId && !loading && !notFound}
 		<div class="mx-auto mb-8 max-w-lg space-y-3">
 			<div class="flex items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
 				<span class="text-xs font-medium text-gray-400">ID</span>
@@ -271,7 +288,7 @@
 		</div>
 	{/if}
 
-	{#if photos.length > 0}
+	{#if photos.length > 0 && !notFound}
 		<div>
 			<h2 class="mb-4 text-lg font-semibold text-gray-700">
 				Photos ({photos.length})

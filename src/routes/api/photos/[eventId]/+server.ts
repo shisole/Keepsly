@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { uploadPhoto, listEventPhotos } from '$lib/server/r2';
+import { uploadPhoto, listEventPhotos, getEventMeta } from '$lib/server/r2';
 import { nanoid } from 'nanoid';
 
 export const GET: RequestHandler = async ({ params }) => {
@@ -11,8 +11,11 @@ export const GET: RequestHandler = async ({ params }) => {
 	}
 
 	try {
-		const photos = await listEventPhotos(eventId);
-		return json({ photos });
+		const [photos, meta] = await Promise.all([
+			listEventPhotos(eventId),
+			getEventMeta(eventId)
+		]);
+		return json({ photos, eventName: meta?.name ?? null });
 	} catch (err) {
 		console.error('GET /api/photos error:', err);
 		throw error(500, err instanceof Error ? err.message : 'Failed to list photos');

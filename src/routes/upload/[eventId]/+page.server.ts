@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { getEventMeta } from '$lib/server/r2';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { eventId } = params;
@@ -8,5 +9,10 @@ export const load: PageServerLoad = async ({ params }) => {
 		throw error(404, 'Invalid event');
 	}
 
-	return { eventId };
+	const meta = await getEventMeta(eventId);
+
+	return {
+		eventId,
+		eventName: meta?.name ?? null
+	};
 };

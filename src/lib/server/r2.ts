@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { env } from '$env/dynamic/private';
 
 function getR2Client() {
@@ -11,6 +11,36 @@ function getR2Client() {
 			secretAccessKey: env.R2_SECRET_ACCESS_KEY!
 		}
 	});
+}
+
+export interface EventMeta {
+	name: string;
+}
+
+export async function saveEventMeta(eventId: string, meta: EventMeta): Promise<void> {
+	const client = getR2Client();
+	const command = new PutObjectCommand({
+		Bucket: env.R2_BUCKET_NAME,
+		Key: `events/${eventId}/meta.json`,
+		Body: JSON.stringify(meta),
+		ContentType: 'application/json'
+	});
+	await client.send(command);
+}
+
+export async function getEventMeta(eventId: string): Promise<EventMeta | null> {
+	const client = getR2Client();
+	try {
+		const command = new GetObjectCommand({
+			Bucket: env.R2_BUCKET_NAME,
+			Key: `events/${eventId}/meta.json`
+		});
+		const response = await client.send(command);
+		const body = await response.Body?.transformToString();
+		return body ? JSON.parse(body) : null;
+	} catch {
+		return null;
+	}
 }
 
 export async function uploadPhoto(eventId: string, photoId: string, body: ArrayBuffer): Promise<void> {

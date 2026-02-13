@@ -9,6 +9,8 @@
 	let { data } = $props();
 	const MAX_PHOTOS = 5;
 
+	let displayName = $derived(data.eventName ?? `Event ${data.eventId}`);
+
 	let selectedFiles = $state<File[]>([]);
 	let uploadedCount = $state(0);
 	let isUploading = $state(false);
@@ -77,19 +79,19 @@
 </script>
 
 <svelte:head>
-	<title>Upload Photos - Photoshoot</title>
-	<meta name="description" content="Tap to take or upload photos for this event." />
-	<meta property="og:title" content="You're invited to share photos!" />
+	<title>Upload Photos - {displayName}</title>
+	<meta name="description" content="Upload photos to {displayName}." />
+	<meta property="og:title" content="Upload photos to {displayName}!" />
 	<meta property="og:description" content="Tap to take or upload photos for this event." />
 	<meta property="og:type" content="website" />
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="You're invited to share photos!" />
+	<meta name="twitter:title" content="Upload photos to {displayName}!" />
 	<meta name="twitter:description" content="Tap to take or upload photos for this event." />
 </svelte:head>
 
 <div class="mx-auto max-w-lg px-4 py-8">
 	<div class="mb-6 text-center">
-		<h1 class="mb-1 text-2xl font-bold text-gray-900">Upload Photos</h1>
+		<h1 class="mb-1 text-2xl font-bold text-gray-900">{displayName}</h1>
 		<p class="text-sm text-gray-500">
 			{#if done}
 				You've uploaded all {MAX_PHOTOS} photos. Thank you!
@@ -127,11 +129,15 @@
 			</div>
 		{/if}
 
-		<a
-			href="/gallery?event={data.eventId}"
-			class="block text-center text-sm font-medium text-primary hover:text-primary-dark"
-		>
-			View event gallery
-		</a>
+		{#if isUploading}
+			<span class="block text-center text-sm text-gray-400">View event gallery</span>
+		{:else}
+			<a
+				href="/gallery?event={data.eventId}"
+				class="block text-center text-sm font-medium text-primary hover:text-primary-dark"
+			>
+				View event gallery
+			</a>
+		{/if}
 	</div>
 </div>
