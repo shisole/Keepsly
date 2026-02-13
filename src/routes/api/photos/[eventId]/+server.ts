@@ -10,8 +10,13 @@ export const GET: RequestHandler = async ({ params }) => {
 		throw error(400, 'Invalid event ID');
 	}
 
-	const photos = await listEventPhotos(eventId);
-	return json({ photos });
+	try {
+		const photos = await listEventPhotos(eventId);
+		return json({ photos });
+	} catch (err) {
+		console.error('GET /api/photos error:', err);
+		throw error(500, err instanceof Error ? err.message : 'Failed to list photos');
+	}
 };
 
 export const POST: RequestHandler = async ({ params, request }) => {
@@ -26,8 +31,12 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		throw error(400, 'No file provided');
 	}
 
-	const photoId = nanoid(10);
-	await uploadPhoto(eventId, photoId, body);
-
-	return json({ photoId });
+	try {
+		const photoId = nanoid(10);
+		await uploadPhoto(eventId, photoId, body);
+		return json({ photoId });
+	} catch (err) {
+		console.error('POST /api/photos error:', err);
+		throw error(500, err instanceof Error ? err.message : 'Failed to upload photo');
+	}
 };
