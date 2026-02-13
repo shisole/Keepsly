@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'photoshoot-uploads';
+const STORAGE_KEY = 'keepsly-uploads';
 
 function getStore(): Record<string, number> {
 	try {

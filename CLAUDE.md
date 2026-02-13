@@ -13,7 +13,7 @@ No test framework is configured.
 
 ## Architecture
 
-SvelteKit 2 + TypeScript + Tailwind CSS 4 app for event-based photo sharing. Guests scan a QR code to upload photos that appear in a live gallery.
+**Keepsly** — "Memories for keeps." A digital album built with SvelteKit 2 + TypeScript + Tailwind CSS 4 for event-based photo sharing. Guests scan a QR code to upload photos that appear in a live gallery.
 
 ### Key Data Flow
 
@@ -49,6 +49,6 @@ Configured in `.env` (see `.env.example`):
 R2_ACCOUNT_ID        # Cloudflare account ID
 R2_ACCESS_KEY_ID     # R2 API token access key
 R2_SECRET_ACCESS_KEY # R2 API token secret
-R2_BUCKET_NAME       # Bucket name (default: photoshoot-uploads)
+R2_BUCKET_NAME       # Bucket name (default: keepsly-uploads)
 R2_PUBLIC_URL        # Public bucket URL (e.g., https://pub-xxx.r2.dev)
 ```

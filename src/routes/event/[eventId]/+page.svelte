@@ -70,9 +70,9 @@
 </script>
 
 <svelte:head>
-	<title>{displayName} - Photoshoot</title>
+	<title>{displayName} - Keepsly</title>
 	<meta name="description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
-	<meta property="og:title" content="{displayName} - Photoshoot" />
+	<meta property="og:title" content="{displayName} - Keepsly" />
 	<meta property="og:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
 	<meta property="og:type" content="website" />
 	{#if data.firstPhoto}
@@ -82,7 +82,7 @@
 	{:else}
 		<meta name="twitter:card" content="summary" />
 	{/if}
-	<meta name="twitter:title" content="{displayName} - Photoshoot" />
+	<meta name="twitter:title" content="{displayName} - Keepsly" />
 	<meta name="twitter:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
 </svelte:head>
 

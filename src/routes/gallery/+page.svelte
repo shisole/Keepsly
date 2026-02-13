@@ -158,14 +158,14 @@
 </script>
 
 <svelte:head>
-	<title>{eventId ? `${displayName} - Gallery` : 'Gallery'} - Photoshoot</title>
-	<meta name="description" content="View photos from {eventId ? displayName : 'a Photoshoot event'}." />
-	<meta property="og:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Photoshoot" />
-	<meta property="og:description" content="View photos from {eventId ? displayName : 'a Photoshoot event'}." />
+	<title>{eventId ? `${displayName} - Gallery` : 'Gallery'} - Keepsly</title>
+	<meta name="description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
+	<meta property="og:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Keepsly" />
+	<meta property="og:description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
 	<meta property="og:type" content="website" />
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Photoshoot" />
-	<meta name="twitter:description" content="View photos from {eventId ? displayName : 'a Photoshoot event'}." />
+	<meta name="twitter:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Keepsly" />
+	<meta name="twitter:description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">

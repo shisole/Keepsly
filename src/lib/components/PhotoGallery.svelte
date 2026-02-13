@@ -4,12 +4,19 @@
 
 	let lightboxUrl = $derived(lightboxIndex !== null ? photos[lightboxIndex] : null);
 
+	// Swipe tracking
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let swiping = false;
+
 	function openLightbox(index: number) {
 		lightboxIndex = index;
+		document.body.style.overflow = 'hidden';
 	}
 
 	function closeLightbox() {
 		lightboxIndex = null;
+		document.body.style.overflow = '';
 	}
 
 	function prev() {
@@ -29,6 +36,22 @@
 		if (e.key === 'Escape') closeLightbox();
 		if (e.key === 'ArrowLeft') prev();
 		if (e.key === 'ArrowRight') next();
+	}
+
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+		touchStartY = e.touches[0].clientY;
+		swiping = false;
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		const dx = e.changedTouches[0].clientX - touchStartX;
+		const dy = e.changedTouches[0].clientY - touchStartY;
+		if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+			swiping = true;
+			if (dx > 0) prev();
+			else next();
+		}
 	}
 </script>
 
@@ -60,11 +83,22 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-		onclick={closeLightbox}
+		onclick={(e) => { if (!swiping) closeLightbox(); }}
 		onkeydown={() => {}}
+		ontouchstart={handleTouchStart}
+		ontouchend={handleTouchEnd}
 	>
 		<button
+			onclick={(e) => { e.stopPropagation(); closeLightbox(); }}
+			aria-label="Close"
+			class="absolute left-3 top-3 z-10 rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/40 sm:hidden"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+		</button>
+
+		<button
 			onclick={(e) => { e.stopPropagation(); prev(); }}
+			aria-label="Previous photo"
 			class="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/40 sm:left-4"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
@@ -76,11 +110,11 @@
 			class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={() => {}}
-			role="img"
 		/>
 
 		<button
 			onclick={(e) => { e.stopPropagation(); next(); }}
+			aria-label="Next photo"
 			class="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/40 sm:right-4"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>

@@ -3,20 +3,20 @@
 </script>
 
 <svelte:head>
-	<title>Photoshoot</title>
-	<meta name="description" content="Create a photo event and let guests share photos via QR code." />
-	<meta property="og:title" content="Photoshoot" />
-	<meta property="og:description" content="Create a photo event and let guests share photos via QR code." />
+	<title>Keepsly</title>
+	<meta name="description" content="A digital album — create an event and let guests share photos via QR code. Memories for keeps." />
+	<meta property="og:title" content="Keepsly" />
+	<meta property="og:description" content="A digital album — create an event and let guests share photos via QR code. Memories for keeps." />
 	<meta property="og:type" content="website" />
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Photoshoot" />
-	<meta name="twitter:description" content="Create a photo event and let guests share photos via QR code." />
+	<meta name="twitter:title" content="Keepsly" />
+	<meta name="twitter:description" content="A digital album — create an event and let guests share photos via QR code. Memories for keeps." />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<div class="mb-8 text-center">
-		<h1 class="mb-2 text-3xl font-bold text-gray-900">Photoshoot</h1>
-		<p class="text-gray-500">Create an event and share the QR code with your guests</p>
+		<h1 class="mb-2 text-3xl font-bold text-gray-900">Keepsly</h1>
+		<p class="text-gray-500">Memories for keeps — create an event and share the QR code with your guests</p>
 	</div>
 
 	<div class="flex flex-col items-center gap-4">
