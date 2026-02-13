@@ -37,7 +37,14 @@
 </script>
 
 <svelte:head>
-	<title>Photoshoot App</title>
+	<title>Photoshoot</title>
+	<meta name="description" content="Create a photo event and let guests share photos via QR code." />
+	<meta property="og:title" content="Photoshoot" />
+	<meta property="og:description" content="Create a photo event and let guests share photos via QR code." />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Photoshoot" />
+	<meta name="twitter:description" content="Create a photo event and let guests share photos via QR code." />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">

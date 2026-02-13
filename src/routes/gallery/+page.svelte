@@ -48,6 +48,13 @@
 
 <svelte:head>
 	<title>Gallery - Photoshoot</title>
+	<meta name="description" content="View photos from a Photoshoot event." />
+	<meta property="og:title" content="Photo Gallery - Photoshoot" />
+	<meta property="og:description" content="View photos from a Photoshoot event." />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Photo Gallery - Photoshoot" />
+	<meta name="twitter:description" content="View photos from a Photoshoot event." />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">

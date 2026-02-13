@@ -68,7 +68,14 @@
 </script>
 
 <svelte:head>
-	<title>Upload Photos</title>
+	<title>Upload Photos - Photoshoot</title>
+	<meta name="description" content="Tap to take or upload photos for this event." />
+	<meta property="og:title" content="You're invited to share photos!" />
+	<meta property="og:description" content="Tap to take or upload photos for this event." />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="You're invited to share photos!" />
+	<meta name="twitter:description" content="Tap to take or upload photos for this event." />
 </svelte:head>
 
 <div class="mx-auto max-w-lg px-4 py-8">
