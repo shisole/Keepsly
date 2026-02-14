@@ -41,6 +41,45 @@
 	let uploadLink = $derived(eventId ? `${$page.url.origin}/upload/${eventId}` : '');
 	let galleryLink = $derived(eventId ? `${$page.url.origin}/gallery?event=${eventId}` : '');
 
+	// Recent searches
+	interface RecentSearch {
+		eventId: string;
+		eventName: string | null;
+		timestamp: number;
+	}
+	const RECENT_KEY = 'keepsly_recent_searches';
+	const MAX_RECENT = 5;
+	let recentSearches = $state<RecentSearch[]>([]);
+
+	function loadRecentSearches() {
+		try {
+			const raw = localStorage.getItem(RECENT_KEY);
+			recentSearches = raw ? JSON.parse(raw) : [];
+		} catch {
+			recentSearches = [];
+		}
+	}
+
+	function saveRecentSearch(id: string, name: string | null) {
+		const filtered = recentSearches.filter((r) => r.eventId !== id);
+		const updated = [{ eventId: id, eventName: name, timestamp: Date.now() }, ...filtered].slice(0, MAX_RECENT);
+		recentSearches = updated;
+		localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+	}
+
+	function selectRecent(id: string) {
+		eventIdInput = id;
+		eventId = id;
+		eventName = null;
+		notFound = false;
+		eventLoaded = false;
+		loading = true;
+		const url = new URL($page.url);
+		url.searchParams.set('event', id);
+		history.replaceState({}, '', url);
+		fetchPhotos(id, true);
+	}
+
 	async function copyText(text: string, type: 'id' | 'link') {
 		await navigator.clipboard.writeText(text);
 		if (type === 'id') {
@@ -80,6 +119,7 @@
 				eventLoaded = false;
 			} else {
 				eventLoaded = true;
+				saveRecentSearch(id, data.eventName ?? null);
 			}
 		} catch {
 			photos = [];
@@ -156,6 +196,7 @@
 	}
 
 	$effect(() => {
+		loadRecentSearches();
 		if (eventId) {
 			eventIdInput = eventId;
 			uploadedCount = getUploadedCount(eventId);
@@ -212,6 +253,33 @@
 			{/if}
 		</button>
 	</form>
+
+	{#if recentSearches.length > 0 && !eventLoaded && !loading}
+		<div class="mx-auto mb-8 max-w-md">
+			<p class="mb-3 text-xs font-medium text-gray-400">Recent searches</p>
+			<div class="flex flex-col gap-2">
+				{#each recentSearches as recent}
+					<button
+						onclick={() => selectRecent(recent.eventId)}
+						class="flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-gray-100 transition-all hover:bg-gray-50 hover:shadow-md"
+					>
+						<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+						</div>
+						<div class="min-w-0 flex-1">
+							<p class="truncate text-sm font-medium text-gray-800">{recent.eventName ?? 'Unnamed Event'}</p>
+							<p class="truncate font-mono text-xs text-gray-400">{recent.eventId}</p>
+						</div>
+						<svg class="h-4 w-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+						</svg>
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
 
 	{#if loading}
 		<div class="flex flex-col items-center gap-3 py-12">
