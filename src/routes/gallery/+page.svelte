@@ -12,6 +12,7 @@
 	let eventIdInput = $state('');
 	let eventId = $state($page.url.searchParams.get('event') ?? '');
 	let eventName = $state<string | null>(null);
+	let bannerUrl = $state<string | null>(null);
 	let photos = $state<string[]>([]);
 	let loading = $state(!!eventId);
 	let eventLoaded = $state(false);
@@ -112,6 +113,7 @@
 			const data = await res.json();
 			photos = data.photos;
 			eventName = data.eventName ?? null;
+			bannerUrl = data.bannerUrl ?? null;
 			maxPhotos = data.maxPhotos ?? 5;
 			uploadDeadline = data.uploadDeadline ?? null;
 			if (!eventName && photos.length === 0) {
@@ -212,7 +214,13 @@
 	<meta property="og:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Keepsly" />
 	<meta property="og:description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
 	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary" />
+	{#if bannerUrl}
+		<meta property="og:image" content={bannerUrl} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content={bannerUrl} />
+	{:else}
+		<meta name="twitter:card" content="summary" />
+	{/if}
 	<meta name="twitter:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Keepsly" />
 	<meta name="twitter:description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
 </svelte:head>
@@ -230,6 +238,12 @@
 		<h1 class="mb-2 text-3xl font-bold text-gray-900">{eventId ? displayName : 'Gallery'}</h1>
 		<p class="text-gray-500">{eventId ? 'View and upload photos' : 'Enter your event ID to view and upload photos'}</p>
 	</div>
+
+	{#if bannerUrl && eventLoaded}
+		<div class="mx-auto mb-8 max-w-lg overflow-hidden rounded-2xl shadow-sm ring-1 ring-gray-100">
+			<img src={bannerUrl} alt="{displayName} banner" class="h-48 w-full object-cover" />
+		</div>
+	{/if}
 
 	<form onsubmit={handleSubmit} class="mx-auto mb-8 flex max-w-md gap-2">
 		<input

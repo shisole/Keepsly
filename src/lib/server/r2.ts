@@ -17,6 +17,7 @@ export interface EventMeta {
 	name: string;
 	maxPhotos: number;
 	uploadDeadline: string; // ISO 8601 datetime string
+	bannerUrl?: string;
 }
 
 export async function saveEventMeta(eventId: string, meta: EventMeta): Promise<void> {
@@ -59,6 +60,21 @@ export async function uploadPhoto(eventId: string, photoId: string, body: ArrayB
 	await client.send(command);
 }
 
+export async function uploadBanner(eventId: string, body: ArrayBuffer): Promise<string> {
+	const client = getR2Client();
+	const key = `events/${eventId}/banner.jpg`;
+
+	const command = new PutObjectCommand({
+		Bucket: env.R2_BUCKET_NAME,
+		Key: key,
+		Body: new Uint8Array(body),
+		ContentType: 'image/jpeg'
+	});
+
+	await client.send(command);
+	return `${env.R2_PUBLIC_URL}/${key}`;
+}
+
 export async function listEventPhotos(eventId: string): Promise<string[]> {
 	const client = getR2Client();
 	const prefix = `events/${eventId}/`;
@@ -73,7 +89,7 @@ export async function listEventPhotos(eventId: string): Promise<string[]> {
 	if (!response.Contents) return [];
 
 	return response.Contents
-		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg'))
+		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
 		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0))
 		.map((obj) => `${env.R2_PUBLIC_URL}/${obj.Key}`);
 }

@@ -1,5 +1,5 @@
 import type { Actions } from './$types';
-import { redirect, fail } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { saveEventMeta } from '$lib/server/r2';
 
@@ -33,6 +33,6 @@ export const actions = {
 
 		const eventId = nanoid(10);
 		await saveEventMeta(eventId, { name: eventName, maxPhotos, uploadDeadline });
-		throw redirect(303, `/event/${eventId}`);
+		return { eventId };
 	}
 } satisfies Actions;

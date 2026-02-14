@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		eventId,
 		eventName: meta?.name ?? null,
+		bannerUrl: meta?.bannerUrl ?? null,
 		firstPhoto: photos[0] ?? null
 	};
 };

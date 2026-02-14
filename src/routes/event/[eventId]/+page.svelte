@@ -75,10 +75,10 @@
 	<meta property="og:title" content="{displayName} - Keepsly" />
 	<meta property="og:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
 	<meta property="og:type" content="website" />
-	{#if data.firstPhoto}
-		<meta property="og:image" content={data.firstPhoto} />
+	{#if data.bannerUrl || data.firstPhoto}
+		<meta property="og:image" content={data.bannerUrl ?? data.firstPhoto} />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content={data.firstPhoto} />
+		<meta name="twitter:image" content={data.bannerUrl ?? data.firstPhoto} />
 	{:else}
 		<meta name="twitter:card" content="summary" />
 	{/if}
@@ -99,6 +99,12 @@
 		<h1 class="mb-2 text-3xl font-bold text-gray-900">{displayName}</h1>
 		<p class="text-gray-500">Share the QR code or link with your guests</p>
 	</div>
+
+	{#if data.bannerUrl}
+		<div class="mb-8 overflow-hidden rounded-2xl shadow-sm ring-1 ring-gray-100">
+			<img src={data.bannerUrl} alt="{displayName} banner" class="h-48 w-full object-cover" />
+		</div>
+	{/if}
 
 	<div class="space-y-6">
 		<div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">

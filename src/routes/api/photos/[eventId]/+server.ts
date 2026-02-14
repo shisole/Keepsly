@@ -19,7 +19,8 @@ export const GET: RequestHandler = async ({ params }) => {
 			photos,
 			eventName: meta?.name ?? null,
 			maxPhotos: meta?.maxPhotos ?? 5,
-			uploadDeadline: meta?.uploadDeadline ?? null
+			uploadDeadline: meta?.uploadDeadline ?? null,
+			bannerUrl: meta?.bannerUrl ?? null
 		});
 	} catch (err) {
 		console.error('GET /api/photos error:', err);
