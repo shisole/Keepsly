@@ -9,6 +9,7 @@
 	import { getUploadedCount, incrementUploadedCount } from '$lib/utils/upload-limit';
 	import { page } from '$app/stores';
 	import SEO from '$lib/components/SEO.svelte';
+	import SocialShare from '$lib/components/SocialShare.svelte';
 
 	let { data } = $props();
 
@@ -228,7 +229,7 @@
 
 	<div class="mb-8 text-center">
 		<h1 class="mb-2 text-3xl font-bold text-gray-900">{eventId ? displayName : 'Gallery'}</h1>
-		<p class="text-gray-500">{eventId ? 'View and upload photos' : 'Enter your event ID to view and upload photos'}</p>
+		<p class="text-gray-500">{eventId ? 'View and Upload Photos' : 'Enter your event ID to view and upload photos'}</p>
 	</div>
 
 	{#if bannerUrl && eventLoaded}
@@ -313,7 +314,7 @@
 	{#if eventId && eventLoaded && !notFound}
 		<div class="mx-auto mb-8 max-w-lg space-y-3">
 			<div class="flex items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
-				<span class="text-xs font-medium text-gray-400">ID</span>
+				<span class="text-xs font-medium text-gray-400">Event ID</span>
 				<span class="flex-1 truncate font-mono text-sm text-gray-700">{eventId}</span>
 				<button
 					onclick={() => copyText(eventId, 'id')}
@@ -339,6 +340,8 @@
 					Share
 				</button>
 			</div>
+
+			<SocialShare url={uploadLink} text={`Upload photos to ${displayName}!`} />
 		</div>
 
 		<div class="mx-auto mb-8 max-w-sm rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">

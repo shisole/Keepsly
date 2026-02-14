@@ -143,7 +143,7 @@
 				href="/gallery?event={data.eventId}"
 				class="block text-center text-sm font-medium text-primary hover:text-primary-dark"
 			>
-				View event gallery
+				View Event Gallery
 			</a>
 		{/if}
 	</div>

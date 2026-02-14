@@ -18,14 +18,14 @@
 			href="/create-event"
 			class="rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-white shadow-md transition-colors hover:bg-primary-dark"
 		>
-			Create event
+			Create Event
 		</a>
 		<span class="text-sm text-gray-400">or</span>
 		<a
 			href="/gallery"
 			class="rounded-xl border border-gray-300 bg-white px-8 py-4 text-lg font-semibold text-gray-700 shadow-md transition-colors hover:bg-gray-50"
 		>
-			View a gallery
+			View a Gallery
 		</a>
 	</div>
 </div>

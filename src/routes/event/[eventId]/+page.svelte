@@ -3,6 +3,7 @@
 	import QRCode from '$lib/components/QRCode.svelte';
 	import PhotoGallery from '$lib/components/PhotoGallery.svelte';
 	import SEO from '$lib/components/SEO.svelte';
+	import SocialShare from '$lib/components/SocialShare.svelte';
 
 	let { data } = $props();
 
@@ -133,6 +134,8 @@
 				</button>
 			</div>
 
+			<SocialShare url={uploadUrl} text={`Upload photos to ${displayName}!`} />
+
 			<div class="flex items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
 				<span class="text-xs font-medium text-gray-400">Gallery</span>
 				<span class="flex-1 truncate text-sm text-gray-700">{galleryUrl}</span>
@@ -149,6 +152,8 @@
 					Share
 				</button>
 			</div>
+
+			<SocialShare url={galleryUrl} text={`${displayName} - Photo Gallery`} />
 		</div>
 
 		<div>
