@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { compressImage } from '$lib/utils/compress';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let creating = $state(false);
 	let bannerFile = $state<File | null>(null);
@@ -22,16 +23,10 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Create Event — Keepsly</title>
-	<meta name="description" content="Create a new event and let guests share photos via QR code." />
-	<meta property="og:title" content="Create Event — Keepsly" />
-	<meta property="og:description" content="Create a new event and let guests share photos via QR code." />
-	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Create Event — Keepsly" />
-	<meta name="twitter:description" content="Create a new event and let guests share photos via QR code." />
-</svelte:head>
+<SEO
+	title="Create Event — Keepsly"
+	description="Create a new event and let guests share photos via QR code."
+/>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<a href="/" class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark">

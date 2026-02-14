@@ -8,6 +8,7 @@
 	import { uploadWithProgress } from '$lib/utils/upload';
 	import { getUploadedCount, incrementUploadedCount } from '$lib/utils/upload-limit';
 	import { page } from '$app/stores';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { data } = $props();
 
@@ -210,22 +211,11 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{eventId ? `${displayName} - Gallery` : 'Gallery'} - Keepsly</title>
-	<meta name="description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
-	<meta property="og:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Keepsly" />
-	<meta property="og:description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
-	<meta property="og:type" content="website" />
-	{#if bannerUrl || data.bannerUrl}
-		<meta property="og:image" content={bannerUrl ?? data.bannerUrl} />
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content={bannerUrl ?? data.bannerUrl} />
-	{:else}
-		<meta name="twitter:card" content="summary" />
-	{/if}
-	<meta name="twitter:title" content="{eventId ? `${displayName} - Gallery` : 'Photo Gallery'} - Keepsly" />
-	<meta name="twitter:description" content="View photos from {eventId ? displayName : 'a Keepsly event'}." />
-</svelte:head>
+<SEO
+	title={`${eventId ? `${displayName} - Gallery` : 'Gallery'} - Keepsly`}
+	description={`View photos from ${eventId ? displayName : 'a Keepsly event'}.`}
+	image={bannerUrl ?? data.bannerUrl}
+/>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<a

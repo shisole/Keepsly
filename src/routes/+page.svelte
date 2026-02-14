@@ -1,13 +1,11 @@
-<svelte:head>
-	<title>Keepsly</title>
-	<meta name="description" content="A digital album — create an event and let guests share photos via QR code. Memories for keeps." />
-	<meta property="og:title" content="Keepsly" />
-	<meta property="og:description" content="A digital album — create an event and let guests share photos via QR code. Memories for keeps." />
-	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Keepsly" />
-	<meta name="twitter:description" content="A digital album — create an event and let guests share photos via QR code. Memories for keeps." />
-</svelte:head>
+<script lang="ts">
+	import SEO from '$lib/components/SEO.svelte';
+</script>
+
+<SEO
+	title="Keepsly"
+	description="A digital album — create an event and let guests share photos via QR code. Memories for keeps."
+/>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<div class="mb-8 text-center">

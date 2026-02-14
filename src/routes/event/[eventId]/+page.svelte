@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import PhotoGallery from '$lib/components/PhotoGallery.svelte';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { data } = $props();
 
@@ -69,22 +70,11 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{displayName} - Keepsly</title>
-	<meta name="description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
-	<meta property="og:title" content="{displayName} - Keepsly" />
-	<meta property="og:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
-	<meta property="og:type" content="website" />
-	{#if data.bannerUrl || data.firstPhoto}
-		<meta property="og:image" content={data.bannerUrl ?? data.firstPhoto} />
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content={data.bannerUrl ?? data.firstPhoto} />
-	{:else}
-		<meta name="twitter:card" content="summary" />
-	{/if}
-	<meta name="twitter:title" content="{displayName} - Keepsly" />
-	<meta name="twitter:description" content="Share photos for {displayName}. Scan the QR code or use the link to upload." />
-</svelte:head>
+<SEO
+	title={`${displayName} - Keepsly`}
+	description={`Share photos for ${displayName}. Scan the QR code or use the link to upload.`}
+	image={data.bannerUrl ?? data.firstPhoto}
+/>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<a
