@@ -32,7 +32,8 @@ export const actions = {
 		const uploadDeadline = new Date(Date.now() + durationMs).toISOString();
 
 		const eventId = nanoid(10);
-		await saveEventMeta(eventId, { name: eventName, maxPhotos, uploadDeadline });
-		return { eventId };
+		const hostKey = nanoid(20);
+		await saveEventMeta(eventId, { name: eventName, maxPhotos, uploadDeadline, hostKey });
+		return { eventId, hostKey };
 	}
 } satisfies Actions;

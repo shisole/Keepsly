@@ -18,6 +18,7 @@ export interface EventMeta {
 	maxPhotos: number;
 	uploadDeadline: string; // ISO 8601 datetime string
 	bannerUrl?: string;
+	hostKey: string;
 }
 
 export async function saveEventMeta(eventId: string, meta: EventMeta): Promise<void> {

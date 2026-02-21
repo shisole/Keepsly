@@ -46,6 +46,7 @@
 		return async ({ result }) => {
 			if (result.type === 'success' && result.data?.eventId) {
 				const eventId = result.data.eventId as string;
+				const hostKey = result.data.hostKey as string;
 				if (bannerFile) {
 					try {
 						const compressed = await compressImage(bannerFile);
@@ -59,7 +60,7 @@
 						// Banner upload failed, continue anyway
 					}
 				}
-				await goto(`/event/${eventId}`);
+				await goto(`/event/${eventId}/created?key=${hostKey}`);
 			} else {
 				creating = false;
 			}
