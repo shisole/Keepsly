@@ -5,6 +5,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import SocialShare from '$lib/components/SocialShare.svelte';
 	import { getHostKey } from '$lib/utils/host-keys';
+	import { connectPhotoStream } from '$lib/utils/photo-stream';
 
 	let { data } = $props();
 
@@ -40,18 +41,6 @@
 			// silent fail
 		} finally {
 			downloadingZip = false;
-		}
-	}
-
-	async function fetchPhotos() {
-		try {
-			const res = await fetch(`/api/photos/${data.eventId}`);
-			if (res.ok) {
-				const result = await res.json();
-				photos = result.photos;
-			}
-		} catch {
-			// silently retry on next poll
 		}
 	}
 
@@ -93,9 +82,12 @@
 
 	$effect(() => {
 		hostKey = getHostKey(data.eventId);
-		fetchPhotos();
-		const interval = setInterval(fetchPhotos, 5000);
-		return () => clearInterval(interval);
+		const disconnect = connectPhotoStream(data.eventId, {
+			onPhotos: (p) => {
+				photos = p;
+			}
+		});
+		return disconnect;
 	});
 </script>
 

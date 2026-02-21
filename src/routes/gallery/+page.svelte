@@ -10,6 +10,7 @@
 	import { page } from '$app/stores';
 	import SEO from '$lib/components/SEO.svelte';
 	import SocialShare from '$lib/components/SocialShare.svelte';
+	import { connectPhotoStream } from '$lib/utils/photo-stream';
 
 	let { data } = $props();
 
@@ -223,14 +224,32 @@
 		}
 	}
 
+	let disconnectStream: (() => void) | null = null;
+
 	$effect(() => {
 		loadRecentSearches();
+		// Clean up previous stream
+		disconnectStream?.();
+		disconnectStream = null;
+
 		if (eventId) {
 			eventIdInput = eventId;
 			uploadedCount = getUploadedCount(eventId);
 			done = uploadedCount >= maxPhotos;
-			fetchPhotos(eventId, true);
+			fetchPhotos(eventId, true).then(() => {
+				if (eventLoaded && !notFound) {
+					disconnectStream = connectPhotoStream(eventId, {
+						onPhotos: (p) => {
+							photos = p;
+						}
+					});
+				}
+			});
 		}
+
+		return () => {
+			disconnectStream?.();
+		};
 	});
 </script>
 
