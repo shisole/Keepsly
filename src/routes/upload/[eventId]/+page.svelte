@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import CameraCapture from '$lib/components/CameraCapture.svelte';
 	import PhotoPreview from '$lib/components/PhotoPreview.svelte';
 	import UploadProgress from '$lib/components/UploadProgress.svelte';
@@ -22,6 +23,7 @@
 	let filePercent = $state(0);
 	let done = $state(false);
 	let errorMessage = $state('');
+	let uploadComplete = $state(false);
 
 	let remaining = $derived(maxPhotos - uploadedCount - selectedFiles.length);
 	let canAddMore = $derived(remaining > 0 && !isUploading && !done && !expired);
@@ -70,7 +72,11 @@
 
 			selectedFiles = [];
 			uploadStatus = 'All photos uploaded!';
+			uploadComplete = true;
 			done = uploadedCount >= maxPhotos;
+			setTimeout(() => {
+				goto(`/gallery?event=${data.eventId}`);
+			}, 2000);
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : 'Upload failed';
 			uploadStatus = '';
@@ -130,21 +136,24 @@
 			<div class="rounded-xl bg-gray-50 p-4 text-center">
 				<p class="font-medium text-gray-600">Uploads have closed for this event.</p>
 			</div>
-		{:else if done}
+		{:else if uploadComplete}
 			<div class="rounded-xl bg-green-50 p-4 text-center">
-				<p class="font-medium text-green-700">All photos uploaded successfully!</p>
+				<p class="font-medium text-green-700">Photos uploaded successfully!</p>
+				<p class="mt-1 text-sm text-green-600">Taking you to the gallery...</p>
 			</div>
 		{/if}
 
-		{#if isUploading}
-			<span class="block text-center text-sm text-gray-400">View event gallery</span>
-		{:else}
-			<a
-				href="/gallery?event={data.eventId}"
-				class="block text-center text-sm font-medium text-primary hover:text-primary-dark"
-			>
-				View Event Gallery
-			</a>
+		{#if !uploadComplete}
+			{#if isUploading}
+				<span class="block text-center text-sm text-gray-400">View event gallery</span>
+			{:else}
+				<a
+					href="/gallery?event={data.eventId}"
+					class="block text-center text-sm font-medium text-primary hover:text-primary-dark"
+				>
+					View Event Gallery
+				</a>
+			{/if}
 		{/if}
 	</div>
 </div>
