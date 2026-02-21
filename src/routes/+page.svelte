@@ -7,7 +7,7 @@
 	description="A digital album — create an event and let guests share photos via QR code. Memories for keeps."
 />
 
-<div class="mx-auto max-w-4xl px-4 py-8">
+<div class="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-4xl flex-col items-center justify-center px-4">
 	<div class="mb-8 text-center">
 		<h1 class="mb-2 text-3xl font-bold text-gray-900">Keepsly</h1>
 		<p class="text-gray-500">Memories for keeps — create an event and share the QR code with your guests</p>
