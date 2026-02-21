@@ -20,6 +20,28 @@
 	let manageUrl = $derived(
 		hostKey ? `${$page.url.origin}/event/${data.eventId}/manage?key=${hostKey}` : null
 	);
+	let downloadingZip = $state(false);
+
+	async function downloadAll() {
+		downloadingZip = true;
+		try {
+			const res = await fetch(`/api/photos/${data.eventId}/download`);
+			if (!res.ok) throw new Error('Download failed');
+			const blob = await res.blob();
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${displayName}-photos.zip`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		} catch {
+			// silent fail
+		} finally {
+			downloadingZip = false;
+		}
+	}
 
 	async function fetchPhotos() {
 		try {
@@ -178,6 +200,26 @@
 			<h2 class="mb-4 text-lg font-semibold text-gray-700">
 				Photos ({photos.length})
 			</h2>
+			{#if photos.length > 0}
+				<button
+					onclick={downloadAll}
+					disabled={downloadingZip}
+					class="mb-4 inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
+				>
+					{#if downloadingZip}
+						<svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+						</svg>
+						Preparing ZIP...
+					{:else}
+						<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+						</svg>
+						Download All
+					{/if}
+				</button>
+			{/if}
 			<PhotoGallery {photos} />
 		</div>
 	</div>
