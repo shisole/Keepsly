@@ -103,6 +103,7 @@
 	// Photo deletion
 	let deleteTarget = $state<string | null>(null);
 	let deleting = $state(false);
+	let deletingPhotos = $state(new Set<string>());
 
 	function updateTimeRemaining() {
 		const deadline = new Date(data.uploadDeadline);
@@ -165,13 +166,22 @@
 		if (!deleteTarget) return;
 		deleting = true;
 		const photoId = getPhotoId(deleteTarget);
+		const target = deleteTarget;
 		try {
 			const res = await fetch(
 				`/api/photos/${data.eventId}/${photoId}?key=${data.hostKey}`,
 				{ method: 'DELETE' }
 			);
 			if (res.ok) {
-				photos = photos.filter((p) => p !== deleteTarget);
+				const updated = new Set(deletingPhotos);
+				updated.add(target);
+				deletingPhotos = updated;
+				setTimeout(() => {
+					photos = photos.filter((p) => p !== target);
+					const cleanup = new Set(deletingPhotos);
+					cleanup.delete(target);
+					deletingPhotos = cleanup;
+				}, 400);
 			}
 		} catch {
 			// silent
@@ -186,7 +196,9 @@
 		const timer = setInterval(updateTimeRemaining, 60000);
 		const disconnect = connectPhotoStream(data.eventId, {
 			onPhotos: (p) => {
-				photos = p;
+				// Keep photos that are currently animating out
+				const animating = [...deletingPhotos].filter((url) => !p.includes(url));
+				photos = [...p, ...animating];
 			}
 		});
 		return () => {
@@ -358,7 +370,10 @@
 		{:else}
 			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
 				{#each photos as photo, i}
-					<div class="group relative aspect-square overflow-hidden rounded-lg">
+					<div
+						class="group relative aspect-square overflow-hidden rounded-lg"
+						style={deletingPhotos.has(photo) ? 'animation: photo-delete 0.4s ease-out forwards; pointer-events: none;' : ''}
+					>
 						<button
 							onclick={() => openLightbox(i)}
 							class="h-full w-full"

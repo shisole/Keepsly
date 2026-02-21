@@ -1,8 +1,41 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+
 	let { photos }: { photos: string[] } = $props();
 	let lightboxIndex = $state<number | null>(null);
 
-	let lightboxUrl = $derived(lightboxIndex !== null ? photos[lightboxIndex] : null);
+	let displayPhotos = $state<string[]>([]);
+	let deletingPhotos = $state(new Set<string>());
+	let lastKnownPhotos: string[] = [];
+
+	$effect(() => {
+		const incoming = photos;
+
+		const removed = untrack(() =>
+			lastKnownPhotos.filter((p) => !incoming.includes(p) && !deletingPhotos.has(p))
+		);
+		lastKnownPhotos = [...incoming];
+
+		if (removed.length > 0) {
+			const newDeleting = untrack(() => new Set(deletingPhotos));
+			removed.forEach((p) => newDeleting.add(p));
+			deletingPhotos = newDeleting;
+
+			displayPhotos = [...incoming, ...removed];
+
+			setTimeout(() => {
+				const updated = new Set(deletingPhotos);
+				removed.forEach((p) => updated.delete(p));
+				deletingPhotos = updated;
+				displayPhotos = displayPhotos.filter((p) => !removed.includes(p));
+			}, 400);
+		} else {
+			const animating = untrack(() => [...deletingPhotos]);
+			displayPhotos = [...incoming, ...animating.filter((p) => !incoming.includes(p))];
+		}
+	});
+
+	let lightboxUrl = $derived(lightboxIndex !== null ? displayPhotos[lightboxIndex] : null);
 
 	// Swipe tracking
 	let touchStartX = 0;
@@ -10,6 +43,7 @@
 	let swiping = false;
 
 	function openLightbox(index: number) {
+		if (deletingPhotos.has(displayPhotos[index])) return;
 		lightboxIndex = index;
 		document.body.style.overflow = 'hidden';
 	}
@@ -21,13 +55,13 @@
 
 	function prev() {
 		if (lightboxIndex !== null) {
-			lightboxIndex = (lightboxIndex - 1 + photos.length) % photos.length;
+			lightboxIndex = (lightboxIndex - 1 + displayPhotos.length) % displayPhotos.length;
 		}
 	}
 
 	function next() {
 		if (lightboxIndex !== null) {
-			lightboxIndex = (lightboxIndex + 1) % photos.length;
+			lightboxIndex = (lightboxIndex + 1) % displayPhotos.length;
 		}
 	}
 
@@ -80,14 +114,15 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-{#if photos.length === 0}
+{#if displayPhotos.length === 0}
 	<p class="py-12 text-center text-gray-400">No photos yet. Waiting for uploads...</p>
 {:else}
 	<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-		{#each photos as photo, i}
+		{#each displayPhotos as photo, i}
 			<button
 				onclick={() => openLightbox(i)}
 				class="relative aspect-square overflow-hidden rounded-lg transition-transform hover:scale-[1.02]"
+				style={deletingPhotos.has(photo) ? 'animation: photo-delete 0.4s ease-out forwards; pointer-events: none;' : ''}
 			>
 				<div class="absolute inset-0 animate-pulse bg-gray-200"></div>
 				<img
@@ -162,7 +197,7 @@
 		</button>
 
 		<div class="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
-			{lightboxIndex + 1} / {photos.length}
+			{lightboxIndex + 1} / {displayPhotos.length}
 		</div>
 	</div>
 {/if}
