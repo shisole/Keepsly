@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getEventMeta, listEventPhotos } from '$lib/server/r2';
+import { getEventMeta, listEventPhotosPaginated } from '$lib/server/r2';
 
 export const load: PageServerLoad = async ({ params, url }) => {
 	const { eventId } = params;
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		throw error(403, 'Invalid host key');
 	}
 
-	const photos = await listEventPhotos(eventId);
+	const result = await listEventPhotosPaginated(eventId, 20);
 
 	return {
 		eventId,
@@ -28,6 +28,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		maxPhotos: meta.maxPhotos,
 		uploadDeadline: meta.uploadDeadline,
 		bannerUrl: meta.bannerUrl ?? null,
-		initialPhotos: photos
+		initialPhotos: result.photos,
+		initialNextCursor: result.nextCursor
 	};
 };

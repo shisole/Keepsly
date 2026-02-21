@@ -129,6 +129,37 @@ export async function listEventPhotoKeys(eventId: string): Promise<string[]> {
 		.map((obj) => obj.Key!);
 }
 
+export async function listEventPhotosPaginated(
+	eventId: string,
+	limit: number,
+	cursor?: string
+): Promise<{ photos: string[]; nextCursor: string | null }> {
+	const client = getR2Client();
+	const prefix = `events/${eventId}/`;
+
+	const command = new ListObjectsV2Command({
+		Bucket: env.R2_BUCKET_NAME,
+		Prefix: prefix
+	});
+
+	const response = await client.send(command);
+
+	if (!response.Contents) return { photos: [], nextCursor: null };
+
+	const sorted = response.Contents
+		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
+		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0));
+
+	const offset = cursor ? parseInt(cursor, 10) : 0;
+	const page = sorted.slice(offset, offset + limit);
+	const hasMore = offset + limit < sorted.length;
+
+	return {
+		photos: page.map((obj) => `${env.R2_PUBLIC_URL}/${obj.Key}`),
+		nextCursor: hasMore ? String(offset + limit) : null
+	};
+}
+
 export async function deletePhoto(eventId: string, photoId: string): Promise<void> {
 	const client = getR2Client();
 	const command = new DeleteObjectCommand({

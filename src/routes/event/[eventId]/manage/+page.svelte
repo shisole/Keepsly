@@ -8,6 +8,9 @@
 	let { data } = $props();
 
 	let photos = $state<string[]>(data.initialPhotos);
+	let nextCursor = $state<string | null>(data.initialNextCursor ?? null);
+	let loadingMore = $state(false);
+	let sentinelEl = $state<HTMLDivElement | null>(null);
 	let uploadUrl = $derived(`${$page.url.origin}/upload/${data.eventId}`);
 	let galleryUrl = $derived(`${$page.url.origin}/gallery?event=${data.eventId}`);
 
@@ -104,6 +107,7 @@
 	let deleteTarget = $state<string | null>(null);
 	let deleting = $state(false);
 	let deletingPhotos = $state(new Set<string>());
+	let newPhotos = $state(new Set<string>());
 
 	function updateTimeRemaining() {
 		const deadline = new Date(data.uploadDeadline);
@@ -191,14 +195,63 @@
 		}
 	}
 
+	async function loadMore() {
+		if (!nextCursor || loadingMore) return;
+		loadingMore = true;
+		try {
+			const res = await fetch(`/api/photos/${data.eventId}?limit=20&cursor=${nextCursor}`);
+			if (!res.ok) return;
+			const json = await res.json();
+			photos = [...photos, ...json.photos];
+			nextCursor = json.nextCursor ?? null;
+		} catch {
+			// silent
+		} finally {
+			loadingMore = false;
+		}
+	}
+
+	$effect(() => {
+		const el = sentinelEl;
+		if (!el || !nextCursor) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && nextCursor && !loadingMore) {
+					loadMore();
+				}
+			},
+			{ rootMargin: '200px' }
+		);
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
 	$effect(() => {
 		updateTimeRemaining();
 		const timer = setInterval(updateTimeRemaining, 60000);
+		let isFirstSSE = true;
 		const disconnect = connectPhotoStream(data.eventId, {
 			onPhotos: (p) => {
+				// Detect newly added photos (skip first SSE to avoid animating initial load)
+				if (!isFirstSSE) {
+					const currentSet = new Set(photos);
+					const added = p.filter((url) => !currentSet.has(url));
+					if (added.length > 0) {
+						const fresh = new Set(newPhotos);
+						added.forEach((url) => fresh.add(url));
+						newPhotos = fresh;
+						setTimeout(() => {
+							const cleanup = new Set(newPhotos);
+							added.forEach((url) => cleanup.delete(url));
+							newPhotos = cleanup;
+						}, 400);
+					}
+				}
+				isFirstSSE = false;
 				// Keep photos that are currently animating out
 				const animating = [...deletingPhotos].filter((url) => !p.includes(url));
 				photos = [...p, ...animating];
+				nextCursor = null;
 			}
 		});
 		return () => {
@@ -372,7 +425,7 @@
 				{#each photos as photo, i}
 					<div
 						class="group relative aspect-square overflow-hidden rounded-lg"
-						style={deletingPhotos.has(photo) ? 'animation: photo-delete 0.4s ease-out forwards; pointer-events: none;' : ''}
+						style={deletingPhotos.has(photo) ? 'animation: photo-delete 0.4s ease-out forwards; pointer-events: none;' : newPhotos.has(photo) ? 'animation: photo-add 0.4s ease-out;' : ''}
 					>
 						<button
 							onclick={() => openLightbox(i)}
@@ -404,6 +457,16 @@
 					</div>
 				{/each}
 			</div>
+			{#if nextCursor}
+				<div bind:this={sentinelEl} class="flex justify-center py-6">
+					{#if loadingMore}
+						<svg class="h-6 w-6 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+						</svg>
+					{/if}
+				</div>
+			{/if}
 		{/if}
 	</div>
 </div>

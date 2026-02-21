@@ -1,20 +1,48 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 
-	let { photos }: { photos: string[] } = $props();
+	let {
+		photos,
+		hasMore = false,
+		loadingMore = false,
+		onLoadMore
+	}: {
+		photos: string[];
+		hasMore?: boolean;
+		loadingMore?: boolean;
+		onLoadMore?: () => void;
+	} = $props();
 	let lightboxIndex = $state<number | null>(null);
+	let sentinelEl = $state<HTMLDivElement | null>(null);
 
 	let displayPhotos = $state<string[]>([]);
 	let deletingPhotos = $state(new Set<string>());
+	let newPhotos = $state(new Set<string>());
 	let lastKnownPhotos: string[] = [];
+	let isInitialLoad = true;
 
 	$effect(() => {
 		const incoming = photos;
+		const prev = lastKnownPhotos;
 
 		const removed = untrack(() =>
-			lastKnownPhotos.filter((p) => !incoming.includes(p) && !deletingPhotos.has(p))
+			prev.filter((p) => !incoming.includes(p) && !deletingPhotos.has(p))
 		);
+
+		const added = isInitialLoad ? [] : incoming.filter((p) => !prev.includes(p));
+		isInitialLoad = false;
 		lastKnownPhotos = [...incoming];
+
+		if (added.length > 0) {
+			const fresh = untrack(() => new Set(newPhotos));
+			added.forEach((p) => fresh.add(p));
+			newPhotos = fresh;
+			setTimeout(() => {
+				const cleanup = new Set(newPhotos);
+				added.forEach((p) => cleanup.delete(p));
+				newPhotos = cleanup;
+			}, 400);
+		}
 
 		if (removed.length > 0) {
 			const newDeleting = untrack(() => new Set(deletingPhotos));
@@ -88,6 +116,21 @@
 		}
 	}
 
+	$effect(() => {
+		const el = sentinelEl;
+		if (!el || !hasMore || !onLoadMore) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && hasMore && !loadingMore) {
+					onLoadMore();
+				}
+			},
+			{ rootMargin: '200px' }
+		);
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
 	let downloading = $state(false);
 
 	async function downloadPhoto() {
@@ -122,7 +165,7 @@
 			<button
 				onclick={() => openLightbox(i)}
 				class="relative aspect-square overflow-hidden rounded-lg transition-transform hover:scale-[1.02]"
-				style={deletingPhotos.has(photo) ? 'animation: photo-delete 0.4s ease-out forwards; pointer-events: none;' : ''}
+				style={deletingPhotos.has(photo) ? 'animation: photo-delete 0.4s ease-out forwards; pointer-events: none;' : newPhotos.has(photo) ? 'animation: photo-add 0.4s ease-out;' : ''}
 			>
 				<div class="absolute inset-0 animate-pulse bg-gray-200"></div>
 				<img
@@ -135,6 +178,16 @@
 			</button>
 		{/each}
 	</div>
+	{#if hasMore}
+		<div bind:this={sentinelEl} class="flex justify-center py-6">
+			{#if loadingMore}
+				<svg class="h-6 w-6 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none">
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+				</svg>
+			{/if}
+		</div>
+	{/if}
 {/if}
 
 {#if lightboxUrl !== null && lightboxIndex !== null}

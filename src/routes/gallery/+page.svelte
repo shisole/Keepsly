@@ -43,6 +43,8 @@
 	let copiedId = $state(false);
 	let copiedLink = $state(false);
 	let downloadingZip = $state(false);
+	let nextCursor = $state<string | null>(null);
+	let loadingMore = $state(false);
 
 	async function downloadAll() {
 		downloadingZip = true;
@@ -135,10 +137,11 @@
 		errorMessage = '';
 		notFound = false;
 		try {
-			const res = await fetch(`/api/photos/${id}`);
+			const res = await fetch(`/api/photos/${id}?limit=20`);
 			if (!res.ok) throw new Error('Event not found');
 			const data = await res.json();
 			photos = data.photos;
+			nextCursor = data.nextCursor ?? null;
 			eventName = data.eventName ?? null;
 			bannerUrl = data.bannerUrl ?? null;
 			maxPhotos = data.maxPhotos ?? 5;
@@ -157,6 +160,22 @@
 			eventLoaded = false;
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadMore() {
+		if (!nextCursor || loadingMore || !eventId) return;
+		loadingMore = true;
+		try {
+			const res = await fetch(`/api/photos/${eventId}?limit=20&cursor=${nextCursor}`);
+			if (!res.ok) return;
+			const data = await res.json();
+			photos = [...photos, ...data.photos];
+			nextCursor = data.nextCursor ?? null;
+		} catch {
+			// silent
+		} finally {
+			loadingMore = false;
 		}
 	}
 
@@ -241,6 +260,7 @@
 					disconnectStream = connectPhotoStream(eventId, {
 						onPhotos: (p) => {
 							photos = p;
+							nextCursor = null;
 						}
 					});
 				}
@@ -453,7 +473,7 @@
 					Download All
 				{/if}
 			</button>
-			<PhotoGallery {photos} />
+			<PhotoGallery {photos} hasMore={nextCursor !== null} {loadingMore} onLoadMore={loadMore} />
 		</div>
 	{/if}
 </div>
