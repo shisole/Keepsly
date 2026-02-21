@@ -4,6 +4,7 @@
 	import PhotoGallery from '$lib/components/PhotoGallery.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 	import SocialShare from '$lib/components/SocialShare.svelte';
+	import { getHostKey } from '$lib/utils/host-keys';
 
 	let { data } = $props();
 
@@ -15,6 +16,10 @@
 	let copiedId = $state(false);
 	let copiedUpload = $state(false);
 	let copiedGallery = $state(false);
+	let hostKey = $state<string | null>(null);
+	let manageUrl = $derived(
+		hostKey ? `${$page.url.origin}/event/${data.eventId}/manage?key=${hostKey}` : null
+	);
 
 	async function fetchPhotos() {
 		try {
@@ -65,6 +70,7 @@
 	}
 
 	$effect(() => {
+		hostKey = getHostKey(data.eventId);
 		fetchPhotos();
 		const interval = setInterval(fetchPhotos, 5000);
 		return () => clearInterval(interval);
@@ -89,6 +95,18 @@
 	<div class="mb-8 text-center">
 		<h1 class="mb-2 text-3xl font-bold text-gray-900">{displayName}</h1>
 		<p class="text-gray-500">Share the QR code or link with your guests</p>
+		{#if manageUrl}
+			<a
+				href={manageUrl}
+				class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+			>
+				<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93s.844.083 1.168-.142l.748-.56a1.14 1.14 0 0 1 1.56.137l.773.773c.4.4.46 1.02.137 1.56l-.56.748c-.225.324-.23.822-.142 1.168s.506.71.93.78l.894.15c.542.09.94.56.94 1.11v1.093c0 .55-.398 1.02-.94 1.11l-.894.149c-.424.07-.764.384-.93.78s-.083.844.142 1.168l.56.748a1.14 1.14 0 0 1-.137 1.56l-.773.773a1.14 1.14 0 0 1-1.56.137l-.748-.56c-.324-.225-.822-.23-1.168-.142s-.71.506-.78.93l-.15.894c-.09.542-.56.94-1.11.94h-1.093c-.55 0-1.02-.398-1.11-.94l-.149-.894a1.15 1.15 0 0 0-.78-.93c-.396-.166-.844-.083-1.168.142l-.748.56a1.14 1.14 0 0 1-1.56-.137l-.773-.773a1.14 1.14 0 0 1-.137-1.56l.56-.748c.225-.324.23-.822.142-1.168a1.15 1.15 0 0 0-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.093c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.764-.384.93-.78s.083-.844-.142-1.168l-.56-.748a1.14 1.14 0 0 1 .137-1.56l.773-.773a1.14 1.14 0 0 1 1.56-.137l.748.56c.324.225.822.23 1.168.142.396-.166.71-.506.78-.93l.15-.894Z" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+				</svg>
+				Manage Event
+			</a>
+		{/if}
 	</div>
 
 	{#if data.bannerUrl}
