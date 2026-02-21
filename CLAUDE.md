@@ -19,16 +19,22 @@ No test framework is configured.
 
 1. **Event creation**: Home page form action generates a 10-char nanoid → returns eventId
 2. **Photo upload**: Guest visits `/upload/[eventId]` → captures/selects photos → client compresses to ≤1MB JPEG → POST to `/api/photos/[eventId]` gets a presigned R2 URL → PUT file directly to R2
-3. **Gallery polling**: Home page polls `GET /api/photos/[eventId]` every 5 seconds → lists R2 objects → returns public URLs
+3. **Gallery view**: `GET /api/photos/[eventId]?limit=20` loads first page → infinite scroll loads more via `?cursor` → SSE stream (`/api/photos/[eventId]/stream`) provides real-time updates
 
 ### Server-Side (`src/lib/server/`)
 
-- `r2.ts` — Cloudflare R2 client (AWS SDK v3 S3-compatible). Provides `getPresignedUploadUrl()` and `listEventPhotos()`. R2 objects stored at `events/{eventId}/{photoId}.jpg`.
+- `r2.ts` — Cloudflare R2 client (AWS SDK v3 S3-compatible). Provides `listEventPhotos()`, `listEventPhotosPaginated()`, `uploadPhoto()`, `deletePhoto()`, and event meta helpers. R2 objects stored at `events/{eventId}/{photoId}.jpg`.
 
 ### API Routes
 
-- `GET /api/photos/[eventId]` — Returns `{ photos: string[] }` (public URLs, newest first)
-- `POST /api/photos/[eventId]` — Returns `{ uploadUrl: string, photoId: string }` (presigned PUT URL, 10 min expiry)
+- `GET /api/photos/[eventId]` — List photos (public URLs, newest first)
+  - **Without pagination**: returns `{ photos, eventName, maxPhotos, uploadDeadline, bannerUrl }`
+  - **With pagination**: add `?limit=20` and optionally `?cursor`, `?offset`, or `?page`. Returns `{ photos, nextCursor, total, eventName, maxPhotos, uploadDeadline, bannerUrl }`. Priority: `cursor > offset > page`.
+  - Omitting `limit` returns all photos (backward compatible)
+- `POST /api/photos/[eventId]` — Upload a photo (JPEG body) → returns `{ photoId }`
+- `DELETE /api/photos/[eventId]/[photoId]?key=[hostKey]` — Delete a photo (host key required)
+- `GET /api/photos/[eventId]/stream` — SSE stream for real-time photo updates
+- `GET /api/photos/[eventId]/download` — Download all photos as ZIP
 
 ### Client Utilities (`src/lib/utils/`)
 
