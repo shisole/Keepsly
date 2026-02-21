@@ -40,7 +40,8 @@ export const GET: RequestHandler = async ({ params, url }) => {
 			return json({
 				...baseMeta,
 				photos: result.photos,
-				nextCursor: result.nextCursor
+				nextCursor: result.nextCursor,
+				total: result.total
 			});
 		}
 

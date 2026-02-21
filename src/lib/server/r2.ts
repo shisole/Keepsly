@@ -133,7 +133,7 @@ export async function listEventPhotosPaginated(
 	eventId: string,
 	limit: number,
 	cursor?: string
-): Promise<{ photos: string[]; nextCursor: string | null }> {
+): Promise<{ photos: string[]; nextCursor: string | null; total: number }> {
 	const client = getR2Client();
 	const prefix = `events/${eventId}/`;
 
@@ -144,7 +144,7 @@ export async function listEventPhotosPaginated(
 
 	const response = await client.send(command);
 
-	if (!response.Contents) return { photos: [], nextCursor: null };
+	if (!response.Contents) return { photos: [], nextCursor: null, total: 0 };
 
 	const sorted = response.Contents
 		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
@@ -156,7 +156,8 @@ export async function listEventPhotosPaginated(
 
 	return {
 		photos: page.map((obj) => `${env.R2_PUBLIC_URL}/${obj.Key}`),
-		nextCursor: hasMore ? String(offset + limit) : null
+		nextCursor: hasMore ? String(offset + limit) : null,
+		total: sorted.length
 	};
 }
 
