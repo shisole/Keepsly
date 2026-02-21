@@ -15,6 +15,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
 		"@types/qrcode": "^1.5.5",
+		"@types/sharp": "^0.32.0",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
 		"tailwindcss": "^4.0.0",
@@ -27,6 +28,7 @@
 		"browser-image-compression": "^2.0.2",
 		"jszip": "^3.10.1",
 		"nanoid": "^5.0.9",
-		"qrcode": "^1.5.4"
+		"qrcode": "^1.5.4",
+		"sharp": "^0.34.5"
 	}
 }

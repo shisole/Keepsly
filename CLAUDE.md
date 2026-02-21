@@ -23,7 +23,7 @@ No test framework is configured.
 
 ### Server-Side (`src/lib/server/`)
 
-- `r2.ts` — Cloudflare R2 client (AWS SDK v3 S3-compatible). Provides `listEventPhotos()`, `listEventPhotosPaginated()`, `uploadPhoto()`, `deletePhoto()`, and event meta helpers. R2 objects stored at `events/{eventId}/{photoId}.jpg`.
+- `r2.ts` — Cloudflare R2 client (AWS SDK v3 S3-compatible). Provides `listEventPhotos()`, `listEventPhotosPaginated()`, `uploadPhoto()`, `deletePhoto()`, and event meta helpers. R2 objects stored at `events/{eventId}/{photoId}.jpg`. Thumbnails stored at `events/{eventId}/{photoId}_thumb.jpg` (400px longest edge, 80% JPEG quality, generated at upload time via sharp). Clients derive thumbnail URLs by replacing `.jpg` with `_thumb.jpg`; an `onerror` fallback loads the full-size image for pre-existing photos without thumbnails.
 
 ### API Routes
 
@@ -57,4 +57,5 @@ R2_ACCESS_KEY_ID     # R2 API token access key
 R2_SECRET_ACCESS_KEY # R2 API token secret
 R2_BUCKET_NAME       # Bucket name (default: keepsly-uploads)
 R2_PUBLIC_URL        # Public bucket URL (e.g., https://pub-xxx.r2.dev)
+PUBLIC_GA_ID         # Google Analytics 4 measurement ID (optional, e.g., G-XXXXXXXXXX)
 ```

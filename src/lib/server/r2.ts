@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { env } from '$env/dynamic/private';
+import sharp from 'sharp';
 
 function getR2Client() {
 	return new S3Client({
@@ -47,18 +48,34 @@ export async function getEventMeta(eventId: string): Promise<EventMeta | null> {
 	}
 }
 
+async function generateThumbnail(body: ArrayBuffer): Promise<Buffer> {
+	return sharp(Buffer.from(body))
+		.resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+		.jpeg({ quality: 80 })
+		.toBuffer();
+}
+
 export async function uploadPhoto(eventId: string, photoId: string, body: ArrayBuffer): Promise<void> {
 	const client = getR2Client();
 	const key = `events/${eventId}/${photoId}.jpg`;
+	const thumbKey = `events/${eventId}/${photoId}_thumb.jpg`;
 
-	const command = new PutObjectCommand({
+	const [thumbnail] = await Promise.all([
+		generateThumbnail(body),
+		client.send(new PutObjectCommand({
+			Bucket: env.R2_BUCKET_NAME,
+			Key: key,
+			Body: new Uint8Array(body),
+			ContentType: 'image/jpeg'
+		}))
+	]);
+
+	await client.send(new PutObjectCommand({
 		Bucket: env.R2_BUCKET_NAME,
-		Key: key,
-		Body: new Uint8Array(body),
+		Key: thumbKey,
+		Body: thumbnail,
 		ContentType: 'image/jpeg'
-	});
-
-	await client.send(command);
+	}));
 }
 
 export async function uploadBanner(eventId: string, body: ArrayBuffer): Promise<string> {
@@ -90,7 +107,7 @@ export async function listEventPhotos(eventId: string): Promise<string[]> {
 	if (!response.Contents) return [];
 
 	return response.Contents
-		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
+		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg') && !obj.Key.endsWith('_thumb.jpg'))
 		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0))
 		.map((obj) => `${env.R2_PUBLIC_URL}/${obj.Key}`);
 }
@@ -124,7 +141,7 @@ export async function listEventPhotoKeys(eventId: string): Promise<string[]> {
 	if (!response.Contents) return [];
 
 	return response.Contents
-		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
+		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg') && !obj.Key.endsWith('_thumb.jpg'))
 		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0))
 		.map((obj) => obj.Key!);
 }
@@ -147,7 +164,7 @@ export async function listEventPhotosPaginated(
 	if (!response.Contents) return { photos: [], nextCursor: null, total: 0 };
 
 	const sorted = response.Contents
-		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
+		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg') && !obj.Key.endsWith('_thumb.jpg'))
 		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0));
 
 	const offset = cursor ? parseInt(cursor, 10) : 0;
@@ -163,9 +180,14 @@ export async function listEventPhotosPaginated(
 
 export async function deletePhoto(eventId: string, photoId: string): Promise<void> {
 	const client = getR2Client();
-	const command = new DeleteObjectCommand({
-		Bucket: env.R2_BUCKET_NAME,
-		Key: `events/${eventId}/${photoId}.jpg`
-	});
-	await client.send(command);
+	await Promise.all([
+		client.send(new DeleteObjectCommand({
+			Bucket: env.R2_BUCKET_NAME,
+			Key: `events/${eventId}/${photoId}.jpg`
+		})),
+		client.send(new DeleteObjectCommand({
+			Bucket: env.R2_BUCKET_NAME,
+			Key: `events/${eventId}/${photoId}_thumb.jpg`
+		}))
+	]);
 }

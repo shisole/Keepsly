@@ -433,12 +433,16 @@
 						>
 							<div class="absolute inset-0 animate-pulse bg-gray-200"></div>
 							<img
-								src={photo}
+								src={photo.replace('.jpg', '_thumb.jpg')}
 								alt=""
 								class="relative h-full w-full object-cover opacity-0 transition-opacity duration-300"
 								loading="lazy"
 								onload={(e) => {
 									(e.currentTarget as HTMLImageElement).classList.remove('opacity-0');
+								}}
+								onerror={(e) => {
+									const img = e.currentTarget as HTMLImageElement;
+									if (img.src.includes('_thumb.jpg')) img.src = photo;
 								}}
 							/>
 						</button>
