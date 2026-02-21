@@ -94,3 +94,37 @@ export async function listEventPhotos(eventId: string): Promise<string[]> {
 		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0))
 		.map((obj) => `${env.R2_PUBLIC_URL}/${obj.Key}`);
 }
+
+export async function getPhotoBuffer(eventId: string, photoKey: string): Promise<Uint8Array | null> {
+	const client = getR2Client();
+	try {
+		const command = new GetObjectCommand({
+			Bucket: env.R2_BUCKET_NAME,
+			Key: photoKey
+		});
+		const response = await client.send(command);
+		const bytes = await response.Body?.transformToByteArray();
+		return bytes ?? null;
+	} catch {
+		return null;
+	}
+}
+
+export async function listEventPhotoKeys(eventId: string): Promise<string[]> {
+	const client = getR2Client();
+	const prefix = `events/${eventId}/`;
+
+	const command = new ListObjectsV2Command({
+		Bucket: env.R2_BUCKET_NAME,
+		Prefix: prefix
+	});
+
+	const response = await client.send(command);
+
+	if (!response.Contents) return [];
+
+	return response.Contents
+		.filter((obj) => obj.Key && obj.Key.endsWith('.jpg') && !obj.Key.endsWith('/banner.jpg'))
+		.sort((a, b) => (b.LastModified?.getTime() ?? 0) - (a.LastModified?.getTime() ?? 0))
+		.map((obj) => obj.Key!);
+}
